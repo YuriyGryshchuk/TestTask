@@ -1843,8 +1843,8 @@ MonoBehaviour:
   _gunLimits: {x: -40, y: 40}
   _gunBarrelLimits: {x: 30, y: 70}
   _maxPower: 25
-  _maxSpeed: 50
-  _minSpeed: 20
+  _maxSpeed: 2
+  _minSpeed: 1
   _gunTransform: {fileID: 1047886560}
   _gunBarrelTransform: {fileID: 714442153}
   _joystick: {fileID: 813386889}
