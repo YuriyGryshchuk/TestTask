@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2635558391680930802}
   - component: {fileID: 7436303526778319159}
+  - component: {fileID: 7774618960314992826}
   m_Layer: 0
   m_Name: Decal
   m_TagString: Untagged
@@ -84,3 +85,15 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &7774618960314992826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5180001398212269982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c87b096724960449bc57ba069128281, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
