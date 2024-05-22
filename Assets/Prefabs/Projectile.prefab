@@ -99,11 +99,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30668e7c70c00f445a731e2eef9fb8e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _decalPrefab: {fileID: 7774618960314992826, guid: a84f9aef195724b4c84868a9bb66e10d, type: 3}
-  _explotionPrefab: {fileID: 6579018558881379520, guid: 89ec069a4a8ae0c4194c5332beb85cbd, type: 3}
-  _decalLifetime: 120
-  _explotionLifetime: 10
-  _maxColition: 2
+  decalPrefab: {fileID: 5180001398212269982, guid: a84f9aef195724b4c84868a9bb66e10d, type: 3}
+  decalLifetime: 120
 --- !u!114 &6650740094485650523
 MonoBehaviour:
   m_ObjectHideFlags: 0

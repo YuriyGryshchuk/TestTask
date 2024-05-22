@@ -21,7 +21,6 @@ namespace Implementations.Game
         [SerializeField] private Joystick _joystick;
         [SerializeField] private PowerSlider _powerSlider;
         [SerializeField] private CameraController _cameraController;
-        [SerializeField] private PullObjectService _pullObjectService;
 
         [SerializeField] private Projectile _projectilePrefab;
         [SerializeField] private Animation _shootAnimation;
@@ -50,7 +49,7 @@ namespace Implementations.Game
             _joystick.OnPointerUpEvent -= Fire;
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
             UpdateRotations(_joystick.Direction);
         }
@@ -70,7 +69,7 @@ namespace Implementations.Game
 
         private void Fire()
         {
-            Projectile projectile = _pullObjectService.SpawnObject<Projectile>(_projectilePrefab, _shootPoint.position, Quaternion.identity);
+            Projectile projectile = Instantiate<Projectile>(_projectilePrefab, _shootPoint.position, Quaternion.identity);
             projectile.gameObject.SetActive(true);
 
             List<Vector3> points = new();
@@ -88,7 +87,7 @@ namespace Implementations.Game
             float speed = Mathf.Clamp(_maxSpeed * _powerSlider.PowerSliderValue, _minSpeed, _maxSpeed);
             float force = _maxPower * _powerSlider.PowerSliderValue;
 
-            projectile.Initialize(_shootPoint.forward, speed, force, _positionCount, _pullObjectService);
+            projectile.Initialize(points, speed, force, _positionCount);
             _cameraController.ShakeCamera(0.5f, 1, 3);
             _shootAnimation.Play();
         }
@@ -96,7 +95,7 @@ namespace Implementations.Game
         public void UpdateRotations(Vector2 rotationDelta)
         {
             if(rotationDelta == Vector2.zero) return;
-            _smoothedRotationDelta = Vector2.Lerp(_smoothedRotationDelta, rotationDelta, Time.fixedDeltaTime * 5f);
+            _smoothedRotationDelta = Vector2.Lerp(_smoothedRotationDelta, rotationDelta, Time.deltaTime * 5f);
             _rotationOffset.x -= _smoothedRotationDelta.x * _axisSpeeds.x;
             _rotationOffset.y += _smoothedRotationDelta.y * _axisSpeeds.y;
 

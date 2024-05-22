@@ -1,127 +1,98 @@
-using Cysharp.Threading.Tasks;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    [SerializeField] private ProjectileDecal _decalPrefab;
-    [SerializeField] private ProjectileExsplotion _explotionPrefab;
-    [SerializeField] private float _decalLifetime = 120f; 
-    [SerializeField] private float _explotionLifetime = 10f; 
-    [SerializeField] private int _maxColition = 2; 
+    [SerializeField] private GameObject decalPrefab;
+    [SerializeField] private float decalLifetime = 120f; 
 
     private float _speed = 1.0f;
-    private PullObjectService _pullObjectService;
     private int _positionCount;
     private float _force;
     private List<Vector3> _points;
-    private Vector3 _direction;
     private int _currentPointIndex = 0;
     private Transform _transform;
-    private Vector3 _startPosition;
     private bool _isCollision;
-    private int _colisionCount;
-    private float _time;
 
     private void Awake()
     {
         _transform = transform;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
-        _time += Time.fixedDeltaTime;
+        if (_points == null || _points.Count == 0)
+            return;
 
-        Vector3 position = _startPosition + _direction * _time * _force;
-        position.y += Physics.gravity.y / 2f * _time * _time;
-
-        _transform.LookAt(position);
-
-        _transform.position = position;
-
-        if (transform.position.y <= -2)
+        if (MoveToNextPoint())
         {
-            SpawnExplotion(_transform.position);
-            Destroy(gameObject);
+            _currentPointIndex++;
+            if (_currentPointIndex >= _points.Count)
+            {
+                //currentPointIndex = 0; 
+            }
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!collision.gameObject.TryGetComponent<Environment>(out Environment environment)) return;
+        if (_isCollision || !collision.gameObject.TryGetComponent<Environment>(out Environment environment)) return;
+        _isCollision = true;
 
-        _colisionCount++;
-        if(_colisionCount >= _maxColition)
-        {
-            SpawnExplotion(_transform.position);
-            gameObject.SetActive(false);
-            return;
-        }
-
-        if(environment.DecalTarget) SpawnDecal(_transform.position, collision.contacts[0].normal);
-
+        if(environment.DecalTarget) SpawnDecal(collision.contacts[0].point, collision.contacts[0].normal);
         RefreshPoints(collision, environment);
     }
 
-    private async void SpawnDecal(Vector3 position, Vector3 normal)
+    private void SpawnDecal(Vector3 position, Vector3 normal)
     {
-        ProjectileDecal decal = _pullObjectService.SpawnObject<ProjectileDecal>(_decalPrefab, position, Quaternion.LookRotation(normal));
+        GameObject decal = Instantiate(decalPrefab, position, Quaternion.LookRotation(normal));
 
-        await UniTask.Delay(TimeSpan.FromSeconds(_decalLifetime));
-
-        decal.gameObject.SetActive(false);
-        Destroy(decal, _decalLifetime);
-    }
-
-    private async void SpawnExplotion(Vector3 position)
-    {
-        ProjectileExsplotion exsplotion = _pullObjectService.SpawnObject<ProjectileExsplotion>(_explotionPrefab, position, Quaternion.identity);
-
-        await UniTask.Delay(TimeSpan.FromSeconds(_explotionLifetime));
-
-        _colisionCount = 0;
-
-        exsplotion.gameObject.SetActive(false);
+        Destroy(decal, decalLifetime);
     }
 
     private void RefreshPoints(Collision collision, Environment environment)
     {
         Vector3 collisionNormal = collision.contacts[0].normal;
 
-        _direction = Vector3.Reflect(_transform.forward, collisionNormal).normalized * environment.BounceForce;
+        Vector3 bounceDirection = Vector3.Reflect(_points[_currentPointIndex] - _transform.position, collisionNormal).normalized * environment.BounceForce;
 
-        _startPosition = _transform.position;
+        _points.Clear();
 
-        _force /= 2;
+        float timeStep = 0.1f;
 
-        _time = 0;
+        float forse = _force /= 2;
+
+        for (int i = 0; i < _positionCount; i++)
+        {
+            float time = i * timeStep;
+            Vector3 position = transform.position + bounceDirection * time * forse;
+            position.y += Physics.gravity.y / 2f * time * time;
+            _points.Add(position);
+        }
+
+        _currentPointIndex = 0;
     }
 
     private bool MoveToNextPoint()
     {
         Vector3 direction = (_points[_currentPointIndex] - _transform.position).normalized;
 
-        _transform.position += direction * _speed * Time.fixedDeltaTime;
+        _transform.position += direction * _speed * Time.deltaTime;
 
-        if (Vector3.Distance(_transform.position, _points[_currentPointIndex]) < 0.1f)
+        if (Vector3.Distance(_transform.position, _points[_currentPointIndex]) < 0.5f)
         {
             return true;
         }
-
         return false;
     }
 
-    public void Initialize(Vector3 direction, float speed, float force, int positionCount, PullObjectService pullObjectService)
+    public void Initialize(List<Vector3> points, float speed, float force, int positionCount)
     {
-        _pullObjectService = pullObjectService;
         _positionCount = positionCount;
         _force = force;
-        _direction = direction;
+        _points = points;
         _speed = speed;
-
-        _time = 0;
-        _startPosition = _transform.position;
+        _transform.position = _points[0];
     }
 }
