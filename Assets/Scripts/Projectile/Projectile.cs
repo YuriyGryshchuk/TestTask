@@ -32,7 +32,7 @@ public class Projectile : MonoBehaviour
 
     private void FixedUpdate()
     {
-        _time += Time.fixedDeltaTime;
+        _time += Time.fixedDeltaTime * _speed;
 
         Vector3 position = _startPosition + _direction * _time * _force;
         position.y += Physics.gravity.y / 2f * _time * _time;
@@ -44,7 +44,7 @@ public class Projectile : MonoBehaviour
         if (transform.position.y <= -2)
         {
             SpawnExplotion(_transform.position);
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 
@@ -60,7 +60,7 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        if(environment.DecalTarget) SpawnDecal(_transform.position, collision.contacts[0].normal);
+        if(environment.DecalTarget) SpawnDecal(collision.collider.ClosestPoint(transform.position), collision.contacts[0].normal);
 
         RefreshPoints(collision, environment);
     }
@@ -81,8 +81,6 @@ public class Projectile : MonoBehaviour
 
         await UniTask.Delay(TimeSpan.FromSeconds(_explotionLifetime));
 
-        _colisionCount = 0;
-
         exsplotion.gameObject.SetActive(false);
     }
 
@@ -99,20 +97,6 @@ public class Projectile : MonoBehaviour
         _time = 0;
     }
 
-    private bool MoveToNextPoint()
-    {
-        Vector3 direction = (_points[_currentPointIndex] - _transform.position).normalized;
-
-        _transform.position += direction * _speed * Time.fixedDeltaTime;
-
-        if (Vector3.Distance(_transform.position, _points[_currentPointIndex]) < 0.1f)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     public void Initialize(Vector3 direction, float speed, float force, int positionCount, PullObjectService pullObjectService)
     {
         _pullObjectService = pullObjectService;
@@ -123,5 +107,6 @@ public class Projectile : MonoBehaviour
 
         _time = 0;
         _startPosition = _transform.position;
+        _colisionCount = 0;
     }
 }
